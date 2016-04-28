@@ -526,7 +526,7 @@ sub open_ouput_file {
 
 my $fh=shift;
 
-$fh = IO::File->new($fh.'.xml', 'w')
+$fh = IO::File->new('ir-repec-'.$fh.'.xml', 'w')
 	or die "unable to open output file for writing: $!";
 binmode($fh, ':utf8');
 $fh->print("<?xml version='1.0' encoding='UTF-8' ?>\n");
