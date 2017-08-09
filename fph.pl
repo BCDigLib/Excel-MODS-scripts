@@ -134,7 +134,7 @@ sub createMODS
       	$writer->endTag();
 		if ($orcid)
 		{
-			$writer->startTag('mods:identifier', type=>'orcid');
+			$writer->startTag('mods:nameIdentifier', type=>'orcid');
       		$writer->characters($orcid);
       		$writer->endTag();
 			print "$interviewee has orcid $orcid\n";
@@ -174,7 +174,7 @@ sub createMODS
 	$writer->endTag();
 	if ($orcid)
 		{
-			$writer->startTag('mods:identifier', type=>'orcid');
+			$writer->startTag('mods:nameIdentifier', type=>'orcid');
       		$writer->characters($orcid);
       		$writer->endTag();
 			print "$interviewer has orcid $orcid\n";
