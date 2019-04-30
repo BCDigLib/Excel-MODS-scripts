@@ -25,7 +25,7 @@ if (($file =~ m/\.xls/i) and $^O eq "MSWin32" )
 		$excelfile=$file;
 		process_excel();
 	}
-elsif ($^O eq "MSWin32")
+elsif (($file =~ m/\.xls/i) and $^O ne "MSWin32")
 	{
 		die "Can only process excel on a PC, use a text file $!"
 	}
