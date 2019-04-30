@@ -2,19 +2,67 @@
 use strict;
 use IO::File;
 use File::Basename qw(basename);
-use Win32::OLE qw(in with);
-use Win32::OLE::Const 'Microsoft Excel';
 use utf8;
 use Cwd;
 use XML::Simple;
 use Data::Dumper;
 
-main();
 
-sub main 
+my $excelfile;
+
+#Get the name of the excel workbook and worksheet you want to process
+print "\n\nEnter the name of the file containing \nthe data you wish to convert to MODS: ";
+my $file = <STDIN>; 
+chomp $file; 
+exit 0 if (!$file);
+
+my $data = read_faculty_names_xml(); 
+
+if (($file =~ m/\.xls/i) and $^O eq "MSWin32" )
+	{
+		use Win32::OLE qw(in with);
+		use Win32::OLE::Const 'Microsoft Excel';
+		$excelfile=$file;
+		process_excel();
+	}
+elsif ($^O eq "MSWin32")
+	{
+		die "Can only process excel on a PC, use a text file $!"
+	}
+
+else {process_text()}
+
+sub process_text
 {
 
-	my ($title, $authors, $genre, $series, $number, $date, $abstract, $keywords, $fileName);
+$file =~s/^(.)\n//;
+
+open(my $input_file, '<:encoding(UTF-8)', $file)
+  or die "Could not open file '$file' $!";
+
+ 
+while (my $row = <$input_file>) {
+  	chomp $row;
+	my @row = split /\t/, $row;
+	foreach(@row)
+	{
+
+		if ($_ =~ m /^"(.)*"$/)
+		{
+			$_ =~ s/^"//;
+			$_ =~ s/"$//;
+		}
+	}
+		
+	$row = \@row;	
+	create_mods($row);}
+ 
+
+
+}
+
+sub process_excel 
+{
 
 	my($worksheet_name, $Sheet, $excel_object) = setup_EXCEL_object(shift);
 
@@ -25,37 +73,41 @@ sub main
 
 		my $CurrentRow=2;
 
-
 		while (my $row=shift @$usedRange)
 		{
-			($title, $authors, $genre, $series, $number, $date, $abstract, $keywords, $fileName) = @$row;
-			
-			$fileName =~ s/\.pdf//;
-			my $fh=open_ouput_file($fileName);
-			
-			my $data = read_faculty_names_xml(); 
-			
-			mods_title($fh, $title);
-			mods_name_element($fh, $authors, $data);
-			mods_type_of_resource($fh);
-			mods_genre($fh, $genre);
-			mods_origin_info($fh, $date);
-			mods_language($fh);
-			mods_physical_description($fh);
-			mods_abstract($fh, $abstract);
-			mods_related_item($fh, $genre, $series, $number);
-			mods_subject($fh, $keywords);
-			mods_access_condition($fh);
-			mods_extension($fh, $fileName);
-			mods_record_info($fh);
-
-			close_output_file ($fh);
+			create_mods($row);
 			
 		};
-
-	
-
 };
+
+
+
+sub create_mods
+{
+my $row=shift;
+my ($title, $authors, $genre, $series, $number, $date, $abstract, $keywords, $fileName)=@$row;
+
+		$fileName =~ s/\.pdf//;
+		my $fh=open_ouput_file($fileName);
+			
+
+			
+		mods_title($fh, $title);
+		mods_name_element($fh, $authors, $data);
+		mods_type_of_resource($fh);
+		mods_genre($fh, $genre);
+		mods_origin_info($fh, $date);
+		mods_language($fh);
+		mods_physical_description($fh);
+		mods_abstract($fh, $abstract);
+		mods_related_item($fh, $genre, $series, $number);
+		mods_subject($fh, $keywords);
+		mods_access_condition($fh);
+		mods_extension($fh, $fileName);
+		mods_record_info($fh);
+
+		close_output_file ($fh);
+}
 
 
 ### ### LIST OF MODS ELEMENTS
@@ -418,11 +470,7 @@ $fh->print ("<mods:name type=\"corporate\" authority=\"naf\">\n\t<mods:namePart>
 
 sub setup_EXCEL_object {
 
-#Get the name of the excel workbook and worksheet you want to process
-print "\n\nEnter the name of the Excel file containing \nthe data you wish to convert to MODS: ";
-my $excelfile = <STDIN>; 
-chomp $excelfile; 
-exit 0 if (!$excelfile);
+
 
 print "\n\nName of the worksheet containing the \ndata you wish to convert to MODS: ";
 my $worksheet_name = <STDIN>; 
