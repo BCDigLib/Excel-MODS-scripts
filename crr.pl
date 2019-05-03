@@ -1,11 +1,9 @@
-#!C:/Perl/bin/perl -w
 use strict;
 use IO::File;
 use File::Basename qw(basename);
 use utf8;
 use Cwd;
 use XML::Simple;
-use Data::Dumper;
 
 
 my $excelfile;
@@ -20,14 +18,14 @@ my $data = read_faculty_names_xml();
 
 if (($file =~ m/\.xls/i) and $^O eq "MSWin32" )
 	{
-		use Win32::OLE qw(in with);
-		use Win32::OLE::Const 'Microsoft Excel';
+#		use Win32::OLE qw(in with);
+#		use Win32::OLE::Const 'Microsoft Excel';
 		$excelfile=$file;
 		process_excel();
 	}
 elsif (($file =~ m/\.xls/i) and $^O ne "MSWin32")
 	{
-		die "Can only process excel on a PC, use a text file $!"
+		die "Can only process excel on a PC, use a text file $!";
 	}
 
 else {process_text()}
@@ -35,13 +33,13 @@ else {process_text()}
 sub process_text
 {
 
-$file =~s/^(.)\n//;
-
 open(my $input_file, '<:encoding(UTF-8)', $file)
   or die "Could not open file '$file' $!";
 
+
  
 while (my $row = <$input_file>) {
+	next if $. < 2;
   	chomp $row;
 	my @row = split /\t/, $row;
 	foreach(@row)
@@ -52,6 +50,10 @@ while (my $row = <$input_file>) {
 			$_ =~ s/^"//;
 			$_ =~ s/"$//;
 		}
+		$_ =~ s/^\s//;
+		$_ =~ s/\s$//;
+
+
 	}
 		
 	$row = \@row;	
