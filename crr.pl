@@ -1,9 +1,10 @@
 use strict;
 use IO::File;
-use File::Basename qw(basename);
 use utf8;
 use Cwd;
 use XML::Simple;
+use Win32::OLE qw(in with);
+use Win32::OLE::Const 'Microsoft Excel';
 
 
 my $excelfile;
@@ -18,8 +19,6 @@ my $data = read_faculty_names_xml();
 
 if (($file =~ m/\.xls/i) and $^O eq "MSWin32" )
 	{
-#		use Win32::OLE qw(in with);
-#		use Win32::OLE::Const 'Microsoft Excel';
 		$excelfile=$file;
 		process_excel();
 	}
@@ -560,3 +559,22 @@ $fh->print("<\/mods:mods>\n");
 $fh->close();
 
 };
+
+=pod
+
+Usage on a PC
+ -- Requires an external data file: facultyNames.xml (This file is exported from the eScholarship workflow database and must be refreshed whenever the eScholarship database is updated with new names)
+ -- execute the script:  crr.pl
+ -- user will be promted to put in a file name, either a tab delimited text file or an excel spreadsheet is expected
+ -- if an Excel file name is input, the user will be prompted to enter the worksheet name (tab)
+ -- output is a MODS record for each row of the input file
+
+Usage on  macOS
+ -- the Perl module WIN32::OLE is not supported so lines 6 and 7 (use Win32::OLE qw(in with);
+use Win32::OLE::Const 'Microsoft Excel';) must be deleted before executing the script
+  -- Requires an external data file: facultyNames.xml (This file is exported from the eScholarship workflow database and must be refreshed whenever the eScholarship database is updated with new names)
+ -- execute the script:  crr.pl
+ -- user will be promted to put in a file name, only tab delimited files are expected (Excel files won't work)
+
+betsy.post@bc.edu 20190618
+=cut
